@@ -44,6 +44,10 @@ class ResultsDB:
         self._conn.execute("DELETE FROM results")
         self._conn.commit()
 
+    def close(self):
+        """Закрыть соединение с базой."""
+        self._conn.close()
+
     def __len__(self):
         return self._conn.execute("SELECT COUNT(*) FROM results").fetchone()[0]
 

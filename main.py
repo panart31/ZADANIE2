@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """ЛР №2, вариант 16. Консольный интерфейс расчёта геометрических тел."""
 
+import math
+
 from geometry import (Parallelepiped, Sphere, Tetrahedron,
                       available_materials, get_material,
                       ResultsDB, export_docx, export_xlsx)
@@ -22,7 +24,7 @@ def read_positive(prompt):
     while True:
         try:
             value = float(input(prompt).replace(",", "."))
-            if value <= 0:
+            if not (math.isfinite(value) and value > 0):
                 raise ValueError
             return value
         except ValueError:
@@ -51,7 +53,9 @@ def make_body(choice):
     if choice == "2":
         a = read_positive("Ребро a, м: ")
         return Tetrahedron(a, material)
-    return Sphere(read_positive("Радиус r, м: "), material)
+    if choice == "3":
+        return Sphere(read_positive("Радиус r, м: "), material)
+    raise ValueError(f"неизвестный тип тела: {choice}")
 
 
 def show_results(db):
@@ -60,10 +64,10 @@ def show_results(db):
     if not rows:
         print("База данных пуста")
         return
-    print(f"{'ID':<4}{'Тело':<16}{'Параметры':<26}{'Материал':<30}"
+    print(f"{'ID':<4}{'Тело':<16}{'Параметры':<26}{'Материал':<34}"
           f"{'V, м^3':>12}{'S, м^2':>12}{'m, кг':>12}")
     for id_, body, params, material, vol, area, mass, created in rows:
-        print(f"{id_:<4}{body:<16}{params:<26}{material:<30}"
+        print(f"{id_:<4}{body:<16}{params:<26}{material:<34}"
               f"{vol:>12.4f}{area:>12.4f}{mass:>12.4f}")
     print(f"Всего записей: {len(db)}")
 
@@ -74,6 +78,7 @@ def main():
         print(MENU)
         choice = input("Выберите пункт: ").strip()
         if choice == "0":
+            db.close()
             print("Выход")
             break
         if choice in ("1", "2", "3"):

@@ -11,7 +11,16 @@ class Body(ABC):
     """Абстрактное тело: объём, площадь поверхности, масса."""
 
     def __init__(self, material):
-        self.material = material  # проверка через property
+        self.material = material  # запись идёт через property с проверкой
+
+    @staticmethod
+    def _check(value):
+        """Проверка линейного размера: конечное положительное число."""
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            raise ValueError("размер должен быть числом")
+        if not (math.isfinite(value) and value > 0):
+            raise ValueError("размер должен быть положительным")
+        return float(value)
 
     @property
     def material(self):
@@ -45,9 +54,6 @@ class Body(ABC):
         """Имя класса тела."""
         return cls.__name__
 
-    def __repr__(self):
-        return f"{self.kind()}({self.params_str()}, {self._material!r})"
-
     def __str__(self):
         return (f"{self.kind()} [{self.params_str()}], {self._material}: "
                 f"V={self.volume():.4f} м^3, S={self.surface_area():.4f} м^2, "
@@ -65,7 +71,7 @@ class Parallelepiped(Body):
 
     def __init__(self, a, b, c, material):
         super().__init__(material)
-        self.a = a  # запись идёт через property с проверкой
+        self.a = a
         self.b = b
         self.c = c
 
@@ -94,14 +100,6 @@ class Parallelepiped(Body):
     def c(self, value):
         self._c = self._check(value)
 
-    @staticmethod
-    def _check(value):
-        if not isinstance(value, (int, float)) or isinstance(value, bool):
-            raise ValueError("размер должен быть числом")
-        if value <= 0:
-            raise ValueError("размер должен быть положительным")
-        return float(value)
-
     def volume(self):
         return self._a * self._b * self._c
 
@@ -110,6 +108,10 @@ class Parallelepiped(Body):
 
     def params_str(self):
         return f"a={self._a:g}, b={self._b:g}, c={self._c:g}"
+
+    def __repr__(self):
+        return (f"Parallelepiped({self._a:g}, {self._b:g}, {self._c:g}, "
+                f"{self._material!r})")
 
 
 class Tetrahedron(Body):
@@ -125,7 +127,7 @@ class Tetrahedron(Body):
 
     @a.setter
     def a(self, value):
-        self._a = Parallelepiped._check(value)
+        self._a = self._check(value)
 
     def volume(self):
         return self._a ** 3 / (6 * math.sqrt(2))
@@ -135,6 +137,9 @@ class Tetrahedron(Body):
 
     def params_str(self):
         return f"a={self._a:g}"
+
+    def __repr__(self):
+        return f"Tetrahedron({self._a:g}, {self._material!r})"
 
 
 class SolidOfRevolution(Body):
@@ -150,7 +155,7 @@ class SolidOfRevolution(Body):
 
     @r.setter
     def r(self, value):
-        self._r = Parallelepiped._check(value)
+        self._r = self._check(value)
 
     def volume(self):
         return 4 / 3 * math.pi * self._r ** 3
@@ -161,6 +166,15 @@ class SolidOfRevolution(Body):
     def params_str(self):
         return f"r={self._r:g}"
 
+    def __repr__(self):
+        return f"SolidOfRevolution({self._r:g}, {self._material!r})"
+
 
 class Sphere(SolidOfRevolution):
     """Шар радиуса r."""
+
+    def __init__(self, r, material):
+        super().__init__(r, material)
+
+    def __repr__(self):
+        return f"Sphere({self._r:g}, {self._material!r})"
