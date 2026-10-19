@@ -3,6 +3,7 @@
 
 import math
 import os
+import sqlite3
 import sys
 from abc import ABC
 
@@ -79,6 +80,11 @@ class TestTetrahedron:
         t = Tetrahedron(2, steel())
         assert t.surface_area() == pytest.approx(math.sqrt(3) * 4)
 
+    def test_repr(self):
+        t = Tetrahedron(2, steel())
+        assert "Tetrahedron(2" in repr(t)
+        assert "Material" in repr(t)
+
 
 class TestSphere:
     def test_volume(self):
@@ -93,6 +99,15 @@ class TestSphere:
         assert issubclass(Sphere, SolidOfRevolution)
         assert issubclass(SolidOfRevolution, Body)
         assert issubclass(Body, ABC)
+
+    def test_repr(self):
+        s = Sphere(1.5, steel())
+        assert "Sphere(1.5" in repr(s)
+
+    def test_str_contains_results(self):
+        s = Sphere(1, steel())
+        text = str(s)
+        assert "Sphere" in text and "7850" in text
 
 
 class TestBody:
@@ -127,6 +142,13 @@ class TestStorage:
         db.add(Sphere(2, steel()))
         name = export_docx(db.all(), str(tmp_path / "r.docx"))
         assert os.path.getsize(name) > 0
+
+    def test_close(self, tmp_path):
+        db = ResultsDB(str(tmp_path / "test.db"))
+        db.add(Sphere(1, steel()))
+        db.close()
+        with pytest.raises(sqlite3.ProgrammingError):
+            db.all()
 
     def test_export_xlsx(self, tmp_path):
         db = ResultsDB(str(tmp_path / "test.db"))
