@@ -28,8 +28,9 @@ class TestMaterial:
         assert "сталь" in str(steel())
 
     def test_invalid_density(self):
-        with pytest.raises(ValueError):
-            Material("мел", -5)
+        for value in (-5, 0, float("nan"), float("inf"), True):
+            with pytest.raises(ValueError):
+                Material("мел", value)
 
     def test_invalid_name(self):
         with pytest.raises(ValueError):

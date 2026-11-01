@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Справочник материалов: плотности в кг/м^3."""
 
+import math
+
 DENSITY_TABLE = {
     "сталь": 7850,
     "алюминий": 2700,
@@ -36,7 +38,9 @@ class Material:
 
     @density.setter
     def density(self, value):
-        if not isinstance(value, (int, float)) or value <= 0:
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            raise ValueError("плотность должна быть положительным числом")
+        if not (math.isfinite(value) and value > 0):
             raise ValueError("плотность должна быть положительным числом")
         self._density = float(value)
 
